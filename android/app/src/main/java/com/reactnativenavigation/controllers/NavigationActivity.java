@@ -35,6 +35,7 @@ import com.reactnativenavigation.params.SnackbarParams;
 import com.reactnativenavigation.params.TitleBarButtonParams;
 import com.reactnativenavigation.params.TitleBarLeftButtonParams;
 import com.reactnativenavigation.react.ReactGateway;
+import com.reactnativenavigation.screens.Screen;
 import com.reactnativenavigation.utils.OrientationHelper;
 import com.reactnativenavigation.views.SideMenu.Side;
 
@@ -235,15 +236,24 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     void showModal(ScreenParams screenParams) {
+        Screen previousScreen = layout.getCurrentScreen();
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("willDisappear", previousScreen.getNavigatorEventId());
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("didDisappear", previousScreen.getNavigatorEventId());
         modalController.showModal(screenParams);
     }
 
     void dismissTopModal() {
         modalController.dismissTopModal();
+        Screen previousScreen = layout.getCurrentScreen();
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("willAppear", previousScreen.getNavigatorEventId());
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("didAppear", previousScreen.getNavigatorEventId());
     }
 
     void dismissAllModals() {
         modalController.dismissAllModals();
+        Screen previousScreen = layout.getCurrentScreen();
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("willAppear", previousScreen.getNavigatorEventId());
+        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("didAppear", previousScreen.getNavigatorEventId());
     }
 
     public void showLightBox(LightBoxParams params) {
@@ -302,6 +312,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     public void setSideMenuVisible(boolean animated, boolean visible, Side side) {
         layout.setSideMenuVisible(animated, visible, side);
+    }
+
+    public void setSideMenuEnabled(boolean enabled, Side side) {
+        layout.setSideMenuEnabled(enabled, side);
     }
 
     public void selectTopTabByTabIndex(String screenInstanceId, int index) {
@@ -403,6 +417,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private void handleModalDismissedEvent() {
         if (!modalController.isShowing()) {
             layout.onModalDismissed();
+            OrientationHelper.setOrientation(this, AppStyle.appStyle.orientation);
         }
     }
 
